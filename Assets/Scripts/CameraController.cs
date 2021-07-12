@@ -1,23 +1,43 @@
-using System.Collections;
-using System.Collections.Generic;
+// Camera class used to retrieve dimensions in world space
 using UnityEngine;
 
-public class CameraController : GenericSingleton<CameraController>
+public class CameraController : MonoBehaviour
 {
-    public float Width
+    [SerializeField]
+    float offsetYFromPlayer;
+    Camera cam;
+    [SerializeField]
+    PlayerController player;
+    
+    private void Update()
     {
-        get 
-        { 
-            Vector3 screenWidth = new Vector3(Screen.width, 0);
-            return Camera.main.ScreenToWorldPoint(screenWidth).x * 2;
-        }
+        if(player.Velocity.y > -30f)
+            transform.position = new Vector3(transform.position.x, player.transform.position.y + offsetYFromPlayer, transform.position.z);
+        else
+        {
+            transform.position -= new Vector3(transform.position.x, player.Velocity.y, transform.position.z) * Time.deltaTime;
+            GameManager.Instance.LoadScene(1, "Main");
+        }         
     }
+
+    private void Start()
+    {
+        cam = GetComponent<Camera>();
+    }
+
     public float Height
     {
         get
         {
-            Vector3 screenHeight = new Vector3(Screen.height, 0);
-            return Camera.main.ScreenToWorldPoint(screenHeight).y * 2;
+            return cam.orthographicSize;
+        }
+    }
+
+    public float Width
+    {
+        get 
+        {
+            return transform.position.y + Height * cam.aspect;
         }
     }
 }

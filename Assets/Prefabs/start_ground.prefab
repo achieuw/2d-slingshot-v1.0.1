@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 1015652107312966029}
   - component: {fileID: 1015652107312966031}
   - component: {fileID: 1015652107312966028}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: start_ground
-  m_TagString: Slinger
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

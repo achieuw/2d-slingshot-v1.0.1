@@ -15,7 +15,7 @@ TagManager:
   - Water
   - UI
   - Wall
-  - 
+  - Ground
   - 
   - 
   - 
@@ -43,4 +43,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 2314217649
+    locked: 0
+  - name: Foreground
+    uniqueID: 2306994147
+    locked: 0
+  - name: UI
+    uniqueID: 2470032959
     locked: 0

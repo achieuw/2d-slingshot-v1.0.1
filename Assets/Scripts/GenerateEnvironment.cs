@@ -1,66 +1,90 @@
+// Generate the environment based on an offset from the camera. 
+// Add objects not generated in the inspector to the scrollObjects list
+// Also add the last wall and slinger to currWall and currSlinger in the inspector (may fix automatically later)
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
 {
     [SerializeField]
-    List<GameObject> object_list;
+    PlayerController player;
+    [SerializeField]
+    CameraController cam;
+    [SerializeField]
+    List<GameObject> scrollObjects;
     [SerializeField]
     GameObject[] prefabs;
     [SerializeField]
-    Transform currWallPos, currSlingerPos;
+    GameObject currWall;
+    [SerializeField]
+    GameObject currSlinger;
+
+    [SerializeField]
+    float distanceBetweenSlingers;
 
     private void Start()
     {
         Initialize();
     }
+
     private void Update()
-    {
-        // Scroll objects downward
-        MoveObjects();
-        // Check if objects are out of bounds
-        CheckBounds(); 
+    {      
+        if(player.Velocity.y != 0)
+            ScrollObjects();
+
+        CheckBounds();
     }
 
-    void Initialize()
+    private void Initialize()
     {
-        foreach (GameObject go in GameObject.FindGameObjectsWithTag("Procedural"))
-        {
-            object_list.Add(go);
+        if(!currWall)
+           currWall = SpawnObject(prefabs[0], prefabs[0].transform.position);
+
+        if (!currSlinger)
+            currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize, player.transform.position.y + distanceBetweenSlingers));
+        else
+            currSlinger.transform.position = new Vector2(GetObjectPosWithOffset(prefabs[1]), transform.position.y);
+    }
+
+    float GetObjectPosWithOffset(GameObject o)
+    {
+        // Get random slinger x-pos with an offset from the wall
+        if (o == prefabs[1])
+            return Random.Range(-1f, 1f) * Camera.main.orthographicSize * Camera.main.aspect - (prefabs[0].transform.localScale.x + prefabs[1].transform.localScale.x / 2);
+        else
+            return 0;
+    }
+
+    // Scroll the objects to be moved downwards relative to the player velocity
+    public void ScrollObjects()
+    {      
+        foreach (GameObject go in scrollObjects)
+        {         
+            go.transform.position -= new Vector3(0, player.Velocity.y, 0) * Time.deltaTime;
         }
     }
     
-    // Scroll the objects to be moved downwards in the speed of the player velocity
-    public void MoveObjects()
-    {
-        foreach (GameObject go in object_list)
-        {
-            go.transform.position += new Vector3(0, PlayerController.Instance.Velocity.y, 0) * Time.deltaTime;
-        }
-    }
-    
-    // Checks if objects is out of bounds based on the camera width and height
+    // Spawn objects when in range
     void CheckBounds()
     {
-        List<GameObject> destroy_list = new List<GameObject>();
-        List<GameObject> add_list = new List<GameObject>();
-
-        
-
-        foreach (GameObject go in object_list)
+        if (currWall.transform.position.y < cam.Height)
         {
-            if (go.transform.position.y < CameraController.Instance.Height * 1.2f)
-            {
-                destroy_list.Add(go);
-                add_list.Add(Instantiate(prefabs[0], new Vector2(currWallPos.position.x, currWallPos.position.y + 12f), currWallPos.rotation));
-            }
+            Vector2 pos = currWall.transform.position;
+            currWall = SpawnObject(prefabs[0], new Vector2(pos.x, pos.y + currWall.transform.localScale.y));
         }
 
-        foreach (GameObject go in destroy_list)
+        if (currSlinger.transform.position.y < cam.Height)
         {
-            object_list.Remove(go);
-            Destroy(go);
-        }
+            Vector2 pos = currSlinger.transform.position;
+            currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize, pos.y + distanceBetweenSlingers));
+        } 
+    }
+
+    GameObject SpawnObject(GameObject objectToSpawn, Vector2 positionToSpawn)
+    {
+        GameObject go = Instantiate(objectToSpawn, positionToSpawn, Quaternion.identity);
+        scrollObjects.Add(go);
+        return go;
     }
 }
