@@ -5,16 +5,19 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField]
     float offsetYFromPlayer;
+    [SerializeField][Range(0.1f, 10f)]
+    float smoothValue;
     Camera cam;
     [SerializeField]
     PlayerController player;
     
     private void Update()
     {
-        if(player.Velocity.y > -30f)
+        if (player.Velocity.y > -30f)
             transform.position = new Vector3(transform.position.x, player.transform.position.y + offsetYFromPlayer, transform.position.z);
         else
         {
+            player.enableSlinging = false;
             transform.position -= new Vector3(transform.position.x, player.Velocity.y, transform.position.z) * Time.deltaTime;
             GameManager.Instance.LoadScene(1, "Main");
         }         

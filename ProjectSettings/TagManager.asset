@@ -7,6 +7,7 @@ TagManager:
   - Slinger
   - Ground
   - Procedural
+  - Green
   layers:
   - Default
   - TransparentFX
@@ -46,6 +47,9 @@ TagManager:
     locked: 0
   - name: Background
     uniqueID: 2314217649
+    locked: 0
+  - name: Slinger
+    uniqueID: 3257148285
     locked: 0
   - name: Foreground
     uniqueID: 2306994147

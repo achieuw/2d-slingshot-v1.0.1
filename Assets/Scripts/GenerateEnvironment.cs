@@ -65,19 +65,19 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
         }
     }
     
-    // Spawn objects when in range
+    // Spawn objects when inside spawn bounds
     void CheckBounds()
     {
-        if (currWall.transform.position.y < cam.Height)
+        if (currWall.transform.position.y < cam.transform.position.y + cam.Height + 10f)
         {
             Vector2 pos = currWall.transform.position;
             currWall = SpawnObject(prefabs[0], new Vector2(pos.x, pos.y + currWall.transform.localScale.y));
         }
 
-        if (currSlinger.transform.position.y < cam.Height)
+        if (currSlinger.transform.position.y < cam.transform.position.y + cam.Height + 10f)
         {
             Vector2 pos = currSlinger.transform.position;
-            currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize, pos.y + distanceBetweenSlingers));
+            currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x, pos.y + distanceBetweenSlingers));
         } 
     }
 
