@@ -51,6 +51,9 @@ TagManager:
   - name: Slinger
     uniqueID: 3257148285
     locked: 0
+  - name: Player
+    uniqueID: 4033720493
+    locked: 0
   - name: Foreground
     uniqueID: 2306994147
     locked: 0

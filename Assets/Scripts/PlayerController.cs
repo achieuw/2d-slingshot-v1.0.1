@@ -22,6 +22,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     bool directionRelativeToMouse;
     public bool enableSlinging = true;
+    public AudioSource audio;
+    public AudioClip slingingSound;
+    public AudioClip slingSound;
+
 
     Vector2 mouseClickPos;
     Vector2 slingPos;
@@ -62,6 +66,7 @@ public class PlayerController : MonoBehaviour
     {
         if (enableSlinging && !testPCG)
             Sling();
+
         if (testPCG)
         {
             gravity = 0;           
@@ -75,15 +80,20 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         HandlePhysics();
+
+        if (Physics2D.Raycast(transform.position, Vector2.right, transform.localScale.x / 2 + .1f, wallMask) ||
+            Physics2D.Raycast(transform.position, Vector2.left, transform.localScale.x / 2 + .1f, wallMask)){
+
+            Velocity = new Vector2(-Velocity.x, Velocity.y);
+            m_drag = drag;
+
+        }
     }
 
     bool IsGrounded()
     {
         // Throws a raycast downwards, left and right from player and checks for the ground or wall layermask
-        if ((Velocity.y <= 0 && 
-            Physics2D.Raycast(transform.position, Vector2.down, transform.localScale.y / 2 + .1f, groundMask)) ||
-            Physics2D.Raycast(transform.position, Vector2.right, transform.localScale.y / 2 + .1f, wallMask) ||
-            Physics2D.Raycast(transform.position, Vector2.left, transform.localScale.y / 2 + .1f, wallMask))
+        if (Velocity.y <= 0 && Physics2D.Raycast(transform.position, Vector2.down, transform.localScale.y / 2 + .1f, groundMask))
         {
             sling = true;
             slingPos = transform.position;
@@ -140,15 +150,26 @@ public class PlayerController : MonoBehaviour
         // Executes if player is able to sling
         if (CanSling())
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if(!IsGrounded())
             {
                 mouseClickPos = MouseToWorldPos();
-            }
-            // Code block for sling mechanic
-            if (Input.GetKey(KeyCode.Mouse0))
+                transform.position = Vector3.Lerp(transform.position, slingPos, 0.01f);
+                SlingTimer(true);
+            }       
+            else
             {
-                SlingTimer(true);             
+                if (Input.GetKeyDown(KeyCode.Mouse0))
+                {
+                    mouseClickPos = MouseToWorldPos();                    
+                }
+                // Code block for sling mechanic
+                if (Input.GetKey(KeyCode.Mouse0))
+                {
+                    transform.position = Vector3.Lerp(transform.position, slingPos, 0.01f);
+                    SlingTimer(true);
+                }
             }
+            
             // Code block for sling release
             if (Input.GetKeyUp(KeyCode.Mouse0))
             {
@@ -180,7 +201,9 @@ public class PlayerController : MonoBehaviour
             isSlinging = false;
             SetSlingValues(false, slingForce * Direction(), gravity, 1f);
             ringTimerObject.transform.localScale = Vector3.one * 0.5f;
-            ringTimerObject.GetComponent<SpriteRenderer>().color = new Color(0, 1, 0, 1);          
+            ringTimerObject.GetComponent<SpriteRenderer>().color = new Color(0, 1, 0, 1);
+            audio.Stop();
+            audio.PlayOneShot(slingSound);
         }
         ActivateDirectionGFX(isSlinging);
         ringTimerObject.SetActive(isSlinging);

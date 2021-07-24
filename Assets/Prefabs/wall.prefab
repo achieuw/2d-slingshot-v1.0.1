@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 914360178131997059}
   m_Layer: 6
   m_Name: wall
-  m_TagString: Slinger
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

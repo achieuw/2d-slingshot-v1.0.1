@@ -45,7 +45,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 914360178131996797, guid: 80851b536ae7a8c4a9d33d77380dd909, type: 3}
       propertyPath: m_TagString
-      value: Slinger
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 914360178131997056, guid: 80851b536ae7a8c4a9d33d77380dd909, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -127,7 +127,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 914360178131996797, guid: 80851b536ae7a8c4a9d33d77380dd909, type: 3}
       propertyPath: m_TagString
-      value: Slinger
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 914360178131997056, guid: 80851b536ae7a8c4a9d33d77380dd909, type: 3}
       propertyPath: m_Materials.Array.data[0]
