@@ -8,6 +8,8 @@ TagManager:
   - Ground
   - Procedural
   - Green
+  - Waterfall
+  - Wall
   layers:
   - Default
   - TransparentFX

@@ -8,6 +8,8 @@ using UnityEngine;
 public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
 {
     [SerializeField]
+    float bounds = 10f;
+    [SerializeField]
     PlayerController player;
     [SerializeField]
     CameraController cam;
@@ -19,6 +21,10 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
     GameObject currWall;
     [SerializeField]
     GameObject currSlinger;
+    [SerializeField]
+    GameObject ground;
+
+    List<GameObject> objectsToDestroy = new List<GameObject>();
 
     [SerializeField]
     float distanceBetweenSlingers;
@@ -42,7 +48,9 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
            currWall = SpawnObject(prefabs[0], prefabs[0].transform.position);
 
         if (!currSlinger)
-            currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize, player.transform.position.y + distanceBetweenSlingers));
+            currSlinger = SpawnObject(prefabs[1], new Vector2(
+                                                  Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x / 2, 
+                                                  player.transform.position.y + distanceBetweenSlingers));
         else
             currSlinger.transform.position = new Vector2(GetObjectPosWithOffset(prefabs[1]), transform.position.y);
     }
@@ -58,23 +66,38 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
 
     // Scroll the objects to be moved downwards relative to the player velocity
     public void ScrollObjects()
-    {      
+    {
         foreach (GameObject go in scrollObjects)
-        {         
-            go.transform.position -= new Vector3(0, player.Velocity.y, 0) * Time.deltaTime;
+        {
+            if (go.transform.position.y > cam.transform.position.y - cam.Height - bounds)
+                go.transform.position -= new Vector3(0, player.Velocity.y, 0) * Time.deltaTime;
+            else
+            {
+                objectsToDestroy.Add(go);
+            }
+                
+        }
+        foreach (GameObject go in objectsToDestroy)
+        {
+            scrollObjects.Remove(go);
+            Destroy(go);
         }
     }
     
     // Spawn objects when inside spawn bounds
     void CheckBounds()
     {
-        if (currWall.transform.position.y < cam.transform.position.y + cam.Height + 10f)
+        if (ground && ground.transform.position.y < cam.transform.position.y - cam.Height - 10f)
+        {
+            objectsToDestroy.Add(ground);
+        }
+        if (currWall.transform.position.y < cam.transform.position.y + cam.Height + bounds)
         {
             Vector2 pos = currWall.transform.position;
             currWall = SpawnObject(prefabs[0], new Vector2(pos.x, pos.y + currWall.transform.localScale.y));
         }
 
-        if (currSlinger.transform.position.y < cam.transform.position.y + cam.Height + 10f)
+        if (currSlinger.transform.position.y < cam.transform.position.y + cam.Height + bounds)
         {
             Vector2 pos = currSlinger.transform.position;
             currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x, pos.y + distanceBetweenSlingers));
