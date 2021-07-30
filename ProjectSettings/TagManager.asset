@@ -56,6 +56,9 @@ TagManager:
   - name: Player
     uniqueID: 4033720493
     locked: 0
+  - name: SlingerParticles
+    uniqueID: 1268508339
+    locked: 0
   - name: Foreground
     uniqueID: 2306994147
     locked: 0

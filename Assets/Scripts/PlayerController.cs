@@ -1,20 +1,13 @@
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : PlayerPhysics
 {
     // Adjustable parameters 
     [Header("Sling values")]
     [SerializeField] float slingForce;
     [SerializeField] float slingRadius;
     [SerializeField] float slingTimer;
-    [SerializeField]GameObject ringTimerObject;
-    [Header("Forces")]
-    [SerializeField] float gravity;
-    float m_gravity;
-    [SerializeField] float drag;
-    float m_drag;
-    [SerializeField][Tooltip("0 = No bounce, 1 = Force inverted")][Range(0, 3)]
-    float wallBounceForce;
+    [SerializeField]GameObject ringTimerObject;   
     [SerializeField][Tooltip("0 = Time stop, 1 = Normal time")][Range(0, 1)]
     float timeSlow = 0.5f;
     [SerializeField] bool directionRelativeToMouse;
@@ -30,34 +23,37 @@ public class PlayerController : MonoBehaviour
     [Header("Debug")]
     [SerializeField]
     bool sling = true;
+ 
+    LineRenderer dirLine;   
+    public Vector2 slingDir;
 
     LayerMask groundMask;
     LayerMask wallMask;
-    LineRenderer dirLine;
-    Vector2 velocity;
-    public Vector2 slingDir;
 
     [SerializeField]
     bool testPCG;
 
-    public Vector2 Velocity
-    {
-        get { return velocity; }
-        set { velocity = value; }
-    }
-
     private void Start()
     {
         GetComponent<CircleCollider2D>().radius = slingRadius; // Changes the radius of the circle that manages sling hitbox
+        dirLine = GetComponentInChildren<LineRenderer>(); // Line renderer which handles the sling direction
         groundMask = LayerMask.GetMask("Ground"); // Layermask for collision with ground and walls
         wallMask = LayerMask.GetMask("Wall"); // Layermask for collision with ground and walls
-        dirLine = GetComponentInChildren<LineRenderer>(); // Line renderer which handles the sling direction
-        m_gravity = gravity;
-        m_drag = drag;
+    }
+
+    private void FixedUpdate()
+    {
+        HandlePhysics(IsGrounded());
     }
 
     private void Update()
     {
+        if (IsGrounded())
+        {
+            sling = true;
+            slingPos = transform.position;
+        }
+            
         if (enableSlinging && !testPCG)
             Sling();
 
@@ -70,72 +66,6 @@ public class PlayerController : MonoBehaviour
         }      
     }
 
-    private void FixedUpdate()
-    {
-        HandlePhysics();   
-    }
-
-    public bool WallCheck()
-    {
-        return Physics2D.Raycast(transform.position, Vector2.right, transform.localScale.x / 2 + .1f, wallMask) ||
-                Physics2D.Raycast(transform.position, Vector2.left, transform.localScale.x / 2 + .1f, wallMask);
-    }
-
-    public bool IsGrounded()
-    {
-        // Throws a raycast downwards, left and right from player and checks for the ground or wall layermask
-        if (Velocity.y <= 0 && Physics2D.Raycast(transform.position, Vector2.down, transform.localScale.y / 2 + .03f, groundMask))
-        {
-            sling = true;
-            slingPos = transform.position;
-            return true;
-        }
-        else
-            return false;
-    }
-
-    void Gravity()
-    {
-        if (!IsGrounded())
-            Velocity -= new Vector2(0, m_gravity) * Time.fixedDeltaTime;
-        else
-        {
-            Velocity = Vector2.zero;
-        }     
-    }
-
-    void WallCollision(float bounceForce)
-    {
-        if (WallCheck())
-        {
-            Velocity = new Vector2(-Velocity.x * bounceForce, Velocity.y);
-            m_drag = drag;
-        }          
-    }
-
-    private void Drag()
-    {
-        // Drag is added based on the direction of the sling. A more horizontal sling adds drag more quickly and vice versa
-        m_drag = (Mathf.Abs(slingDir.x) * drag - m_drag * 0.01f) * Time.fixedDeltaTime;
-        Vector2 temp_drag = new Vector2(m_drag, 0);
-        if (Velocity.x < -0.2f)
-            Velocity += temp_drag;
-        else if (Velocity.x > 0.2f)
-            Velocity -= temp_drag;
-        else
-            Velocity = new Vector2(0, Velocity.y);
-    }
-
-    void HandlePhysics()
-    {
-        // We only change the position horizontally since the vertical position is handled by the scrolling environment
-        transform.position += new Vector3(Velocity.x, 0, 0) * Time.fixedDeltaTime;
-
-        Gravity();
-        Drag();
-        WallCollision(wallBounceForce);
-    }
-
     // Enables slinging when entering sling radius (change this to detect colliders from sling game object in update?)
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -143,7 +73,7 @@ public class PlayerController : MonoBehaviour
         {
             sling = true;
             slingPos = collision.gameObject.transform.position;
-        }
+        }    
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
@@ -151,6 +81,28 @@ public class PlayerController : MonoBehaviour
         {
             sling = false;
         }
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            InvertForce(new Vector2(Velocity.x * wallBounceForce, -Velocity.y));
+        }
+    }
+    public bool IsGrounded()
+    {
+        // Throws a raycast downwards, left and right from player and checks for the ground or wall layermask
+        if (Velocity.y <= 0 && Physics2D.Raycast(transform.position, Vector2.down, transform.localScale.y / 2 + .03f, groundMask))
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+    public bool WallCheck()
+    {
+        return Physics2D.Raycast(transform.position, Vector2.right, transform.localScale.x / 2 + .1f, wallMask) ||
+                Physics2D.Raycast(transform.position, Vector2.left, transform.localScale.x / 2 + .1f, wallMask);
     }
 
     bool CanSling() => sling ? true : false;
@@ -202,12 +154,12 @@ public class PlayerController : MonoBehaviour
         if (isSlinging)
         {
             ringTimerObject.transform.localScale -= Vector3.one * 2 * Time.deltaTime / slingTimer;
-            ringTimerObject.GetComponent<SpriteRenderer>().color += new Color(-50, 50, 0, 0) * Time.deltaTime;
+            //ringTimerObject.GetComponent<SpriteRenderer>().color += new Color(-50, 50, 0, 0) * Time.deltaTime;
         }
         else
         {
             ringTimerObject.transform.localScale = Vector3.one * 0.5f;
-            ringTimerObject.GetComponent<SpriteRenderer>().color = new Color(0, 1, 0, 1);
+            //ringTimerObject.GetComponent<SpriteRenderer>().color = new Color(0, 1, 0, 1);
         }
     }
 
@@ -242,7 +194,7 @@ public class PlayerController : MonoBehaviour
     void SetSlingValues(Vector2 velocity, float gravity, float timeScale)
     {      
         Velocity = velocity;
-        m_gravity = gravity;
+        Gravity = gravity;
         Time.timeScale = timeScale;
     }
 

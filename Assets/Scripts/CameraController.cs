@@ -19,7 +19,7 @@ public class CameraController : MonoBehaviour
         {
             player.enableSlinging = false;
             transform.position -= new Vector3(transform.position.x, player.Velocity.y, transform.position.z) * Time.deltaTime;
-            GameManager.Instance.LoadScene(1, "Main");
+            GameManager.Instance.LoadScene(1, "Dark Main");
         }         
     }
 
