@@ -1,8 +1,6 @@
 // Generate the environment based on an offset from the camera. 
-// Add objects not generated in the inspector to the scrollObjects list
-// Also add the last wall and slinger to currWall and currSlinger in the inspector (may fix automatically later)
+// Add objects not generated in this script to the scrollObjects list in the inspector.
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
@@ -10,47 +8,43 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
     [SerializeField]
     float bounds = 10f;
     [SerializeField]
-    PlayerController player;
+    float chanceToSpawnWaterfall;
     [SerializeField]
-    CameraController cam;
+    float distanceBetweenSlingers;
     [SerializeField]
-    List<GameObject> scrollObjects;
-    [SerializeField]
-    GameObject[] prefabs;
-    [SerializeField]
-    GameObject currWall;
-    [SerializeField]
-    GameObject currSlinger;
-    [SerializeField]
-    GameObject ground;
+    int wallsToSpawnBeforeWaterfall;
+    int spawnedWalls = 0;
+
+    [SerializeField] PlayerController player;
+    [SerializeField] CameraController cam;
+    [SerializeField] List<GameObject> scrollObjects;
+    [SerializeField] GameObject[] prefabs;
+    [SerializeField] GameObject currWall;
+    [SerializeField] GameObject currSlinger;
+    [SerializeField] GameObject ground;
 
     List<GameObject> objectsToDestroy = new List<GameObject>();
 
-    [SerializeField]
-    float distanceBetweenSlingers;
-
-    private void Start()
+    private void Awake()
     {
+        // Initialize start objects cause the rest of the generated objects are based on the location of the previous objects
         Initialize();
     }
 
     private void Update()
     {      
-        if(player.Velocity.y != 0)
-            ScrollObjects();
-
+        ScrollObjects();
         CheckBounds();
     }
 
     private void Initialize()
     {
-        if(!currWall)
-           currWall = SpawnObject(prefabs[0], prefabs[0].transform.position);
-
+        if (!currWall)
+            currWall = SpawnScrollingObject(prefabs[0], prefabs[0].transform.position);
         if (!currSlinger)
-            currSlinger = SpawnObject(prefabs[1], new Vector2(
-                                                  Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x / 2, 
-                                                  player.transform.position.y + distanceBetweenSlingers));
+            currSlinger = SpawnScrollingObject(prefabs[1], new Vector2(
+                                                  Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x / 2,
+                                                  player.transform.position.y + distanceBetweenSlingers));  
         else
             currSlinger.transform.position = new Vector2(GetObjectPosWithOffset(prefabs[1]), transform.position.y);
     }
@@ -67,16 +61,23 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
     // Scroll the objects to be moved downwards relative to the player velocity
     public void ScrollObjects()
     {
+        // Ground is destroyed earlier than other objects
+        if (ground && ground.transform.position.y < cam.transform.position.y - cam.Height - 10f)
+        {
+            objectsToDestroy.Add(ground);
+        }
+
+        // Check if objects are out of bounds and add to a list of destruction
         foreach (GameObject go in scrollObjects)
         {
             if (go.transform.position.y > cam.transform.position.y - cam.Height - bounds)
                 go.transform.position -= new Vector3(0, player.Velocity.y, 0) * Time.deltaTime;
             else
-            {
                 objectsToDestroy.Add(go);
-            }
                 
         }
+
+        // Destroy all items in the list of destruction
         foreach (GameObject go in objectsToDestroy)
         {
             scrollObjects.Remove(go);
@@ -84,30 +85,50 @@ public class GenerateEnvironment : GenericSingleton<GenerateEnvironment>
         }
     }
     
-    // Spawn objects when inside spawn bounds
+    // Spawn objects when inside spawn bounds (camera bounds + offset)
     void CheckBounds()
     {
-        if (ground && ground.transform.position.y < cam.transform.position.y - cam.Height - 10f)
-        {
-            objectsToDestroy.Add(ground);
-        }
         if (currWall.transform.position.y < cam.transform.position.y + cam.Height + bounds)
         {
             Vector2 pos = currWall.transform.position;
-            currWall = SpawnObject(prefabs[0], new Vector2(pos.x, pos.y + currWall.transform.localScale.y));
-        }
+            currWall = SpawnScrollingObject(prefabs[0], new Vector2(pos.x, pos.y + currWall.transform.localScale.y));
 
+            if(spawnedWalls > wallsToSpawnBeforeWaterfall)
+                SpawnObjectByChance(prefabs[2], chanceToSpawnWaterfall);
+        }
         if (currSlinger.transform.position.y < cam.transform.position.y + cam.Height + bounds)
         {
             Vector2 pos = currSlinger.transform.position;
-            currSlinger = SpawnObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x, pos.y + distanceBetweenSlingers));
+            currSlinger = SpawnScrollingObject(prefabs[1], new Vector2(Random.Range(-1f, 1f) * Camera.main.orthographicSize - prefabs[0].transform.localScale.x, pos.y + distanceBetweenSlingers));
         } 
     }
 
-    GameObject SpawnObject(GameObject objectToSpawn, Vector2 positionToSpawn)
+    GameObject SpawnScrollingObject(GameObject objectToSpawn, Vector2 positionToSpawn)
     {
         GameObject go = Instantiate(objectToSpawn, positionToSpawn, Quaternion.identity);
         scrollObjects.Add(go);
         return go;
+    }
+
+    void SpawnObjectByChance(GameObject objectToSpawn, float chanceToSpawn)
+    {
+        int random = Random.Range(0, 101);
+
+        if (random > chanceToSpawn)
+            return;
+        else
+        {   // If the object is a waterfall the side which it spawns is also randomized
+            if(objectToSpawn = prefabs[2])
+            {
+                random = Random.Range(0, 101);
+
+                if (random > 50)
+                    Instantiate(prefabs[2], Vector3.up + Vector3.left * prefabs[2].transform.position.x, Quaternion.identity);
+                else
+                    Instantiate(prefabs[2], Vector3.up + Vector3.right * prefabs[2].transform.position.x, Quaternion.identity);
+            }   
+            else
+                Instantiate(objectToSpawn, objectToSpawn.transform);
+        }
     }
 }

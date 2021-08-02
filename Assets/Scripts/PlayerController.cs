@@ -7,9 +7,8 @@ public class PlayerController : PlayerPhysics
     [SerializeField] float slingForce;
     [SerializeField] float slingRadius;
     [SerializeField] float slingTimer;
-    [SerializeField]GameObject ringTimerObject;   
-    [SerializeField][Tooltip("0 = Time stop, 1 = Normal time")][Range(0, 1)]
-    float timeSlow = 0.5f;
+    [SerializeField] GameObject ringTimerObject;   
+    [SerializeField] [Tooltip("0 = Time stop, 1 = Normal time")] [Range(0, 1)] float timeSlow = 0.5f;
     [SerializeField] bool directionRelativeToMouse;
     public bool enableSlinging = true;
     public AudioSource audio;
@@ -18,21 +17,17 @@ public class PlayerController : PlayerPhysics
 
     Vector2 mouseClickPos;
     Vector2 slingPos;
-
-    // Debugging 
-    [Header("Debug")]
-    [SerializeField]
-    bool sling = true;
- 
-    LineRenderer dirLine;   
+    LineRenderer dirLine;
     public Vector2 slingDir;
 
     LayerMask groundMask;
     LayerMask wallMask;
 
-    [SerializeField]
-    bool testPCG;
-
+    // Debugging 
+    [Header("Debug")] 
+    [SerializeField] bool sling = true;
+    [SerializeField] bool testPCG;
+    
     private void Start()
     {
         GetComponent<CircleCollider2D>().radius = slingRadius; // Changes the radius of the circle that manages sling hitbox
@@ -66,19 +61,26 @@ public class PlayerController : PlayerPhysics
         }      
     }
 
-    // Enables slinging when entering sling radius (change this to detect colliders from sling game object in update?)
+    // Enables slinging when entering sling radius
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Slinger"))
         {
             sling = true;
             slingPos = collision.gameObject.transform.position;
+
+            if (collision.gameObject.GetComponent<Slinger>().scoreable)
+            {
+                ScoreManager.Instance.Score++;
+                collision.gameObject.GetComponent<Slinger>().scoreable = false;
+            }
+                
         }    
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Slinger"))
-        {
+        {          
             sling = false;
         }
     }
@@ -129,6 +131,11 @@ public class PlayerController : PlayerPhysics
                 if (Input.GetKey(KeyCode.Mouse0))
                 {
                     transform.position = Vector3.Lerp(transform.position, slingPos, 0.01f);
+
+                    // -- Change to better sling animation xd -- 
+                    GetComponent<PlayerBehaviour>().groundColAnim.Play();
+                    //----------------------
+
                     SlingTimer(true);
                 }
             }
