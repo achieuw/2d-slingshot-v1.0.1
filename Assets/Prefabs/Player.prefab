@@ -323,9 +323,9 @@ Animation:
   m_GameObject: {fileID: 4473628340033702495}
   m_Enabled: 1
   serializedVersion: 3
-  m_Animation: {fileID: 7400000, guid: 9368c56e26ef5c04986de6ed9c24a89f, type: 2}
+  m_Animation: {fileID: 0}
   m_Animations:
-  - {fileID: 7400000, guid: 9368c56e26ef5c04986de6ed9c24a89f, type: 2}
+  - {fileID: 0}
   m_WrapMode: 0
   m_PlayAutomatically: 0
   m_AnimatePhysics: 0
@@ -343,8 +343,8 @@ GameObject:
   - component: {fileID: 4473628340055106097}
   - component: {fileID: 4473628340055106099}
   - component: {fileID: 4473628340055106098}
-  - component: {fileID: 4473628340055106101}
   - component: {fileID: 4473628340055106096}
+  - component: {fileID: -3517884520344698728}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -396,8 +396,8 @@ MonoBehaviour:
   audio: {fileID: 4473628340055106096}
   slingingSound: {fileID: 8300000, guid: d39e8e17cf22b484aa193b1b2ec53184, type: 3}
   slingSound: {fileID: 8300000, guid: 65fcc4e3ad637b8478fff877465eed65, type: 3}
-  sling: 1
   slingDir: {x: 0, y: 0}
+  sling: 1
   testPCG: 0
 --- !u!114 &4473628340055106097
 MonoBehaviour:
@@ -411,7 +411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83c0305211babb14a96bad5c19b2ff23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  groundColAnim: {fileID: 4473628340033702490}
+  animator: {fileID: 0}
   gfx: {fileID: 4473628340033702495}
 --- !u!50 &4473628340055106099
 Rigidbody2D:
@@ -460,22 +460,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.44621024, y: 0.71157074}
   m_EdgeRadius: 0
---- !u!58 &4473628340055106101
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4473628340055106100}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 0.5
 --- !u!82 &4473628340055106096
 AudioSource:
   m_ObjectHideFlags: 0
@@ -572,6 +556,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!58 &-3517884520344698728
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4473628340055106100}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.6569588
 --- !u!1001 &4473628340499988981
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -673,7 +673,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 21232134, guid: 1bcfccf592472944baab9167f5b7218b, type: 3}
       propertyPath: m_SortingLayer
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 21232134, guid: 1bcfccf592472944baab9167f5b7218b, type: 3}
       propertyPath: m_SortingLayerID

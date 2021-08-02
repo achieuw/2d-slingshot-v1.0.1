@@ -132,8 +132,8 @@ public class PlayerController : PlayerPhysics
                 {
                     transform.position = Vector3.Lerp(transform.position, slingPos, 0.01f);
 
-                    // -- Change to better sling animation xd -- 
-                    GetComponent<PlayerBehaviour>().groundColAnim.Play();
+                    // -- Change to better sling animation -- 
+                    GetComponent<PlayerBehaviour>().animator.Play("Base Layer.PlayerGroundCollision", 0, 0);
                     //----------------------
 
                     SlingTimer(true);
