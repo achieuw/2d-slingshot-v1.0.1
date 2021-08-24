@@ -88,7 +88,7 @@ public class PlayerController : PlayerPhysics
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            InvertForce(new Vector2(Velocity.x * wallBounceForce, -Velocity.y));
+           // InvertForce(new Vector2(Velocity.x * wallBounceForce, -Velocity.y));
         }
     }
     public bool IsGrounded()
